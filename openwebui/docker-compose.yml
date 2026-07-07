@@ -1,0 +1,33 @@
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: unless-stopped
+
+    environment:
+      # OpenAI-compatible API endpoint for models
+      - OPENAI_API_BASE_URL=http://llama-server:8080/v1
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ENABLE_OPENAI_API=true
+      - ENABLE_OLLAMA_API=false
+      - WEBUI_AUTH=false
+
+    volumes:
+      - open-webui-data:/app/backend/data
+
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.open-webui.rule=Host(`webui.${DOMAIN}`)
+      - traefik.http.routers.open-webui.entrypoints=websecure
+      - traefik.http.routers.open-webui.tls=true
+      - traefik.http.services.open-webui.loadbalancer.server.port=8080
+
+    networks:
+      - webgateway
+
+volumes:
+  open-webui-data:
+
+networks:
+  webgateway:
+    external: true

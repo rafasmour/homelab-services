@@ -1,0 +1,9 @@
+* 
+
+!.env.example
+!docker-compose.yml
+!Dockerfile
+!README.md
+!.gitignore
+!models
+!models/router-config.ini.example

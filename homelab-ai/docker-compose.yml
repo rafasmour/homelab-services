@@ -1,0 +1,50 @@
+services:
+  llama-cpp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        LLAMA_REF: ${LLAMA_REF:-master}
+        MAX_JOBS: ${MAX_JOBS:-4}
+    container_name: llama-server
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - ./models:/models
+    command:
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "8080"
+      - "--flash-attn"
+      - "on"
+      - "-ngl"
+      - "all"
+      - "--ctx-size"
+      - "${CONTEXT_SIZE:-50000}"
+      - "--batch-size"
+      - "${BATCH_SIZE:-4096}"
+      - "--ubatch-size"
+      - "${UBATCH_SIZE:-4096}"
+      - "--cache-type-k"
+      - "q8_0"
+      - "--cache-type-v"
+      - "q4_0"
+      - "--metrics"
+      - "--models-preset"
+      - "/models/router-config.ini"
+      - "--jinja"
+    restart: unless-stopped
+    networks:
+      - webgateway
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.llama-server.rule=Host(`ai.${DOMAIN}`)
+      - traefik.http.routers.llama-server.entrypoints=websecure
+      - traefik.http.routers.llama-server.tls=true
+      - "traefik.http.services.llama-server.loadbalancer.server.scheme=http"
+      - "traefik.http.services.llama-server.loadbalancer.server.port=8080"
+
+networks:
+  webgateway:
+    external: true

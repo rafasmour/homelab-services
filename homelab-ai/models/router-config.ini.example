@@ -1,0 +1,9 @@
+[chat-model]
+model = /models/llama-3-8b.gguf
+ctx-size = 8192
+ngl = 99
+
+[code-model]
+model = /models/deepseek-coder.gguf
+ctx-size = 16384
+ngl = 99
