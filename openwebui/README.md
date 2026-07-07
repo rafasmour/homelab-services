@@ -1,7 +1,7 @@
 # Open WebUI
 
 Open WebUI provides a browser interface for the OpenAI-compatible API exposed
-by [`homelab-ai`](../homelab-ai/README.md). In this repository it connects to
+by [`llama-cpp`](../llama-cpp/README.md). In this repository it connects to
 the `llama-server` container over the shared `webgateway` Docker network and is
 published by Traefik at `https://webui.<DOMAIN>`.
 
@@ -9,7 +9,7 @@ published by Traefik at `https://webui.<DOMAIN>`.
 
 - Docker Engine with Docker Compose
 - The external Docker network `webgateway`
-- A running `homelab-ai` stack reachable as `llama-server:8080`
+- A running `llama-cpp` stack reachable as `llama-server:8080`
 - Traefik configured to route `webui.<DOMAIN>`
 
 ## Configuration
@@ -27,7 +27,7 @@ Set the following variables:
 | `DOMAIN` | Creates the Traefik host rule `webui.<DOMAIN>` |
 | `OPENAI_API_KEY` | Value sent to the upstream OpenAI-compatible backend |
 
-`homelab-ai` does not enforce authentication by default, but Open WebUI still
+`llama-cpp` does not enforce authentication by default, but Open WebUI still
 expects an API key field for the OpenAI provider. Any non-empty placeholder is
 sufficient unless the upstream API is later protected.
 

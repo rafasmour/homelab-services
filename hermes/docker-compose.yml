@@ -1,0 +1,35 @@
+services:
+  hermes:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes
+    restart: unless-stopped
+    command: gateway run
+    environment:
+      - API_SERVER_HOST=0.0.0.0
+      - API_SERVER_KEY=${API_SERVER_KEY}
+      - HERMES_DASHBOARD_ENABLED=true
+      - HERMES_DASHBOARD_BASIC_AUTH_USERNAME=${HERMES_DASHBOARD_BASIC_AUTH_USERNAME}
+      - HERMES_DASHBOARD_BASIC_AUTH_PASSWORD=${HERMES_DASHBOARD_BASIC_AUTH_PASSWORD}
+      - HERMES_DASHBOARD_BASIC_AUTH_SECRET=${HERMES_DASHBOARD_BASIC_AUTH_SECRET}
+    volumes:
+      - hermes-data:/opt/data
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.hermes-dashboard.rule=Host(`hermes.${DOMAIN}`)
+      - traefik.http.routers.hermes-dashboard.entrypoints=websecure
+      - traefik.http.routers.hermes-dashboard.tls=true
+      - traefik.http.services.hermes-dashboard.loadbalancer.server.port=9119
+      - traefik.http.routers.hermes-api.rule=Host(`hermes.${DOMAIN}`) && PathPrefix(`/v1`)
+      - traefik.http.routers.hermes-api.entrypoints=websecure
+      - traefik.http.routers.hermes-api.tls=true
+      - traefik.http.routers.hermes-api.priority=100
+      - traefik.http.services.hermes-api.loadbalancer.server.port=8642
+    networks:
+      - webgateway
+
+volumes:
+  hermes-data:
+
+networks:
+  webgateway:
+    external: true
