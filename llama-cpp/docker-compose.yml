@@ -34,6 +34,8 @@ services:
       - "--models-preset"
       - "/models/router-config.ini"
       - "--jinja"
+      - "--models-max"
+      - "${MAX_MODELS:-1}"
     restart: unless-stopped
     networks:
       - webgateway

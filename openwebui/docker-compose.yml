@@ -3,7 +3,6 @@ services:
     image: ghcr.io/open-webui/open-webui:main
     container_name: open-webui
     restart: unless-stopped
-
     environment:
       # OpenAI-compatible API endpoint for models
       - OPENAI_API_BASE_URL=http://llama-server:8080/v1

@@ -1,24 +1,63 @@
 services:
-  hermes:
+  dashboard:
     image: nousresearch/hermes-agent:latest
-    container_name: hermes
+    container_name: hermes-dashboard
     restart: unless-stopped
-    command: gateway run
+    command: ["dashboard", "--host", "0.0.0.0", "--no-open"]
+    depends_on:
+      - api
+    volumes:
+      - hermes-data:/opt/data
     environment:
-      - API_SERVER_HOST=0.0.0.0
-      - API_SERVER_KEY=${API_SERVER_KEY}
-      - HERMES_DASHBOARD_ENABLED=true
+      - HERMES_UID=${HERMES_UID:-10000}
+      - HERMES_GID=${HERMES_GID:-10000}
       - HERMES_DASHBOARD_BASIC_AUTH_USERNAME=${HERMES_DASHBOARD_BASIC_AUTH_USERNAME}
       - HERMES_DASHBOARD_BASIC_AUTH_PASSWORD=${HERMES_DASHBOARD_BASIC_AUTH_PASSWORD}
       - HERMES_DASHBOARD_BASIC_AUTH_SECRET=${HERMES_DASHBOARD_BASIC_AUTH_SECRET}
-    volumes:
-      - hermes-data:/opt/data
+      - HERMES_DASHBOARD_PUBLIC_URL=https://hermes.${DOMAIN}
+      - HERMES_API_URL=http://hermes-api:8642
+      - API_SERVER_BASE_URL=http://hermes-api:8642
+      - GATEWAY_ALLOW_ALL_USERS=true
+      # 1. Force Hermes to use the local OpenAI provider profile
+      - HERMES_PROVIDER=openai
+
+      # 2. Point to the base llama.cpp endpoint (omit /v1 if auto-appended)
+      - OPENAI_BASE_URL=http://llama-cpp:8080/v1
+      - OPENAI_API_KEY=dummy
+      - API_SERVER_ENABLED=true
     labels:
       - traefik.enable=true
       - traefik.http.routers.hermes-dashboard.rule=Host(`hermes.${DOMAIN}`)
       - traefik.http.routers.hermes-dashboard.entrypoints=websecure
       - traefik.http.routers.hermes-dashboard.tls=true
       - traefik.http.services.hermes-dashboard.loadbalancer.server.port=9119
+    networks:
+      - webgateway
+
+  api:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes-api
+    restart: unless-stopped
+    command: ["gateway", "run"]
+    volumes:
+      - hermes-data:/opt/data
+    environment:
+      - HERMES_UID=${HERMES_UID:-10000}
+      - HERMES_GID=${HERMES_GID:-10000}
+      - GATEWAY_ALLOW_ALL_USERS=true
+      # 1. Force Hermes to use the local OpenAI provider profile
+      - HERMES_PROVIDER=openai
+
+      # 2. Point to the base llama.cpp endpoint (omit /v1 if auto-appended)
+      - OPENAI_BASE_URL=http://llama-cpp:8080/v1
+      - OPENAI_API_KEY=dummy
+      - API_SERVER_ENABLED=true
+      - API_SERVER_HOST=0.0.0.0
+      - API_SERVER_PORT=8642
+      - API_SERVER_KEY=${API_SERVER_KEY}
+      - API_SERVER_MODEL_NAME=${API_SERVER_MODEL_NAME:-hermes-agent}
+    labels:
+      - traefik.enable=true
       - traefik.http.routers.hermes-api.rule=Host(`hermes.${DOMAIN}`) && PathPrefix(`/v1`)
       - traefik.http.routers.hermes-api.entrypoints=websecure
       - traefik.http.routers.hermes-api.tls=true
