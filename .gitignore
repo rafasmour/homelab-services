@@ -1,0 +1,5 @@
+*
+!hermes/
+!llama-cpp/
+!openwebui/
+!.gitignore
